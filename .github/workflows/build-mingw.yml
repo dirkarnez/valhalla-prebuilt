@@ -1,0 +1,151 @@
+name: cpp-cmake-mingw-prebuilt-release-actions-workflow
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+      - 'c*'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        compiler:
+        - {
+            name: "x86_64-8.1.0-release-posix-seh-rt_v6-rev0",
+            url: "https://github.com/dirkarnez/cpp-tools/raw/main/x86_64-8.1.0-release-posix-seh-rt_v6-rev0.7z"
+          }
+        - {
+            name: "winlibs-x86_64-posix-seh-gcc-11.2.0-mingw-w64-9.0.0-r1",
+            url: "https://github.com/brechtsanders/winlibs_mingw/releases/download/11.2.0-12.0.1-9.0.0-r1/winlibs-x86_64-posix-seh-gcc-11.2.0-mingw-w64-9.0.0-r1.zip"
+          }
+        - {
+            name: "msvc2019"
+          }
+        - {
+            name: "msvc2022"
+          }
+
+    runs-on: windows-latest
+    env:
+      libraryName: valhalla
+      cmakeInstallationPath: valhalla-installation
+      tagName: 3.4.0
+    steps:
+      - name: git clone
+        shell: cmd
+        run: git clone --recurse-submodules https://github.com/valhalla/valhalla.git  && cd valhalla && git checkout ${{ env.tagName }}
+
+      - name: download compiler
+        if: ${{  matrix.compiler.url }}
+        shell: cmd
+        run: |
+          curl ${{ matrix.compiler.url }} -L --output compiler &&^
+          7z.exe x compiler
+          
+      - name: curl cmake-3.24.0-windows-x86_64.zip
+        shell: cmd
+        run: curl https://github.com/Kitware/CMake/releases/download/v3.24.0/cmake-3.24.0-windows-x86_64.zip -L --output cmake-3.24.0-windows-x86_64.zip && dir && 7z.exe x cmake-3.24.0-windows-x86_64.zip
+
+      - name: curl PortableGit-2.38.1-64-bit.7z.exe
+        shell: cmd
+        run: curl https://github.com/git-for-windows/git/releases/download/v2.38.1.windows.1/PortableGit-2.38.1-64-bit.7z.exe -L --output PortableGit-2.38.1-64-bit.7z.exe && dir && 7z.exe x PortableGit-2.38.1-64-bit.7z.exe -o"PortableGit-2.38.1-64-bit"
+
+      - shell: cmd
+        run: |
+          curl "https://github.com/dirkarnez/boost-prebuilt/releases/download/v1.72.0/boost-v1.72.0-mingw64-x86_64-posix-seh-rev0-8.1.0.zip" -L -O -J &&^
+          7z.exe x boost-v1.72.0-mingw64-x86_64-posix-seh-rev0-8.1.0.zip -o"boost-v1.72.0-mingw64-x86_64-posix-seh-rev0-8.1.0"
+          
+      - name: set PATH, check mingw version, cmake generate, build and install
+        if: ${{ matrix.compiler.name == "msvc2019" }}
+        shell: cmd
+        run: |
+            set PATH=^
+            ${{ github.workspace }}\mingw64;^
+            ${{ github.workspace }}\mingw64\bin;^
+            ${{ github.workspace }}\cmake-3.24.0-windows-x86_64\bin;
+            set CD_LINUX=%CD:\=/%
+            cd valhalla &&^
+            cmake.exe -G "Visual Studio 16 2019" -A x64 ^
+            -DCMAKE_BUILD_TYPE=Release ^
+            -DBUILD_SHARED_LIBS=OFF ^
+            -DENABLE_TOOLS=OFF ^
+            -DENABLE_DATA_TOOLS=OFF ^
+            -DENABLE_SERVICES=OFF ^
+            -DENABLE_PYTHON_BINDINGS=OFF ^
+            -DENABLE_CCACHE=OFF ^
+            -DENABLE_TESTS=OFF ^
+            -DENABLE_BENCHMARKS=OFF ^
+            -DLOGGING_LEVEL=DEBUG ^
+            -DCMAKE_INSTALL_PREFIX="cmake-build/${{ env.cmakeInstallationPath }}" -B./cmake-build &&^
+            cd cmake-build && cmake --build . --config Release && cmake --install .
+            
+      - name: set PATH, check mingw version, cmake generate, build and install
+        if: ${{ matrix.compiler.name == "msvc2022" }}
+        shell: cmd
+        run: |
+            set PATH=^
+            ${{ github.workspace }}\mingw64;^
+            ${{ github.workspace }}\mingw64\bin;^
+            ${{ github.workspace }}\cmake-3.24.0-windows-x86_64\bin;
+            set CD_LINUX=%CD:\=/%
+            cd valhalla &&^
+            cmake.exe -G "Visual Studio 17 2022" -A x64 ^
+            -DCMAKE_BUILD_TYPE=Release ^
+            -DBUILD_SHARED_LIBS=OFF ^
+            -DENABLE_TOOLS=OFF ^
+            -DENABLE_DATA_TOOLS=OFF ^
+            -DENABLE_SERVICES=OFF ^
+            -DENABLE_PYTHON_BINDINGS=OFF ^
+            -DENABLE_CCACHE=OFF ^
+            -DENABLE_TESTS=OFF ^
+            -DENABLE_BENCHMARKS=OFF ^
+            -DLOGGING_LEVEL=DEBUG ^
+            -DCMAKE_INSTALL_PREFIX="cmake-build/${{ env.cmakeInstallationPath }}" -B./cmake-build &&^
+            cd cmake-build && cmake --build . --config Release && cmake --install . 
+            
+      - name: set PATH, check mingw version, cmake generate, build and install
+        if: ${{ matrix.compiler.name == "x86_64-8.1.0-release-posix-seh-rt_v6-rev0" }}
+        shell: cmd
+        run: |
+            set PATH=^
+            ${{ github.workspace }}\mingw64;^
+            ${{ github.workspace }}\mingw64\bin;^
+            ${{ github.workspace }}\cmake-3.24.0-windows-x86_64\bin;
+            set CD_LINUX=%CD:\=/%
+            gcc --version &&^
+            cd valhalla &&^
+            cmake.exe -G"MinGW Makefiles" ^
+            -DCMAKE_BUILD_TYPE=Release ^
+            -DBUILD_SHARED_LIBS=OFF ^
+            -DENABLE_TOOLS=OFF ^
+            -DENABLE_DATA_TOOLS=OFF ^
+            -DENABLE_SERVICES=OFF ^
+            -DENABLE_PYTHON_BINDINGS=OFF ^
+            -DENABLE_CCACHE=OFF ^
+            -DENABLE_TESTS=OFF ^
+            -DENABLE_BENCHMARKS=OFF ^
+            -DLOGGING_LEVEL=DEBUG ^
+            -DBoost_COMPILER=mgw81 ^
+            -DBoost_NO_SYSTEM_PATHS=TRUE ^
+            -DBoost_USE_STATIC_LIBS=TRUE ^
+            -DBoost_USE_STATIC_RUNTIME=ON ^
+            -DBOOST_ROOT="%CD_LINUX%/boost-v1.72.0-mingw64-x86_64-posix-seh-rev0-8.1.0/lib/cmake/Boost-1.72.0" ^
+            -DCMAKE_INSTALL_PREFIX="cmake-build/${{ env.cmakeInstallationPath }}" -B./cmake-build &&^
+            cd cmake-build && cmake --build . --config Release 
+            
+    # && cmake --install . 
+            
+      - name: Archive Release
+        uses: thedoctor0/zip-release@master
+        with:
+          type: 'zip'
+          directory: "valhalla/cmake-build"
+          filename: "valhalla-${{ github.ref_name }}-${{ matrix.compiler.name }}.zip"
+        
+      - name: Release prebuilt
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "valhalla/cmake-build/valhalla-${{ github.ref_name }}-${{ matrix.compiler.name }}.zip"
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
