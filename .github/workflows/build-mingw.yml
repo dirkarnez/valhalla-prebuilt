@@ -57,7 +57,7 @@ jobs:
           7z.exe x boost-v1.72.0-mingw64-x86_64-posix-seh-rev0-8.1.0.zip -o"boost-v1.72.0-mingw64-x86_64-posix-seh-rev0-8.1.0"
           
       - name: set PATH, check mingw version, cmake generate, build and install
-        if: ${{ matrix.compiler.name == "msvc2019" }}
+        if: ${{ matrix.compiler.name == 'msvc2019' }}
         shell: cmd
         run: |
             set PATH=^
@@ -81,7 +81,7 @@ jobs:
             cd cmake-build && cmake --build . --config Release && cmake --install .
             
       - name: set PATH, check mingw version, cmake generate, build and install
-        if: ${{ matrix.compiler.name == "msvc2022" }}
+        if: ${{ matrix.compiler.name == 'msvc2022' }}
         shell: cmd
         run: |
             set PATH=^
@@ -105,7 +105,7 @@ jobs:
             cd cmake-build && cmake --build . --config Release && cmake --install . 
             
       - name: set PATH, check mingw version, cmake generate, build and install
-        if: ${{ matrix.compiler.name == "x86_64-8.1.0-release-posix-seh-rt_v6-rev0" }}
+        if: ${{ matrix.compiler.name == 'x86_64-8.1.0-release-posix-seh-rt_v6-rev0' }}
         shell: cmd
         run: |
             set PATH=^
