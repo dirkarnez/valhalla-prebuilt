@@ -61,6 +61,11 @@ jobs:
           curl "https://github.com/dirkarnez/zlib-prebuilt/releases/download/v1.2.13/zlib-v1.2.13-mingw64-x86_64-posix-seh-rev0-8.1.0.zip" -L -O &&^
           7z.exe x zlib-v1.2.13-mingw64-x86_64-posix-seh-rev0-8.1.0.zip -o"zlib-v1.2.13-mingw64-x86_64-posix-seh-rev0-8.1.0"
 
+      - shell: cmd
+        run: |
+          curl "https://github.com/dirkarnez/curl-prebuilt/releases/download/v8.0.1/curl-v8.0.1-mingw64-x86_64-posix-seh-rev0-8.1.0.zip" -L -O &&^
+          7z.exe x curl-v8.0.1-mingw64-x86_64-posix-seh-rev0-8.1.0.zip -o"curl-v8.0.1-mingw64-x86_64-posix-seh-rev0-8.1.0"
+
       - name: set PATH, check mingw version, cmake generate, build and install
         if: ${{ matrix.compiler.name == 'msvc2019' }}
         shell: cmd
@@ -137,6 +142,7 @@ jobs:
             -DBoost_USE_STATIC_RUNTIME=ON ^
             -DBOOST_ROOT="%CD_LINUX%/boost-v1.72.0-mingw64-x86_64-posix-seh-rev0-8.1.0/lib/cmake/Boost-1.72.0" ^
             -DZLIB_ROOT="%CD_LINUX%/zlib-v1.2.13-mingw64-x86_64-posix-seh-rev0-8.1.0" ^
+            -DCURL_DIR="curl-v8.0.1-mingw64-x86_64-posix-seh-rev0-8.1.0/lib/cmake/CURL" ^
             -DZLIB_USE_STATIC_LIBS=ON ^
             -DCMAKE_INSTALL_PREFIX="cmake-build/${{ env.cmakeInstallationPath }}" -B./cmake-build &&^
             cd cmake-build && cmake --build . --config Release 
