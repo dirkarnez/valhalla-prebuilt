@@ -142,7 +142,7 @@ jobs:
             -DBoost_USE_STATIC_RUNTIME=ON ^
             -DBOOST_ROOT="%CD_LINUX%/boost-v1.72.0-mingw64-x86_64-posix-seh-rev0-8.1.0/lib/cmake/Boost-1.72.0" ^
             -DZLIB_ROOT="%CD_LINUX%/zlib-v1.2.13-mingw64-x86_64-posix-seh-rev0-8.1.0" ^
-            -DCURL_DIR="curl-v8.0.1-mingw64-x86_64-posix-seh-rev0-8.1.0/lib/cmake/CURL" ^
+            -DCURL_DIR="%CD_LINUX%/curl-v8.0.1-mingw64-x86_64-posix-seh-rev0-8.1.0/lib/cmake/CURL" ^
             -DZLIB_USE_STATIC_LIBS=ON ^
             -DCMAKE_INSTALL_PREFIX="cmake-build/${{ env.cmakeInstallationPath }}" -B./cmake-build &&^
             cd cmake-build && cmake --build . --config Release 
